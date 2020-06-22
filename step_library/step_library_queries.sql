@@ -129,9 +129,9 @@ WHERE
 SELECT
   library_user_id
 FROM
-  library_log
+  book_copies
 WHERE
-  serial_number = 1;
+  ISBN = '0002' AND library_user_id IS NOT NULL;
 
 -- Find all the books of any particular category like fiction, scientific.
 
@@ -139,3 +139,17 @@ SELECT * FROM book_titles
 WHERE book_category = 'CSE';
 
 -- Find all the books issued by specific user.
+
+WITH serial_numbers AS
+(
+SELECT serial_number FROM library_log
+  WHERE action = "issue" AND library_user_id = 'USR002'
+),
+ISBNs AS (
+  SELECT DISTINCT t2.ISBN
+  FROM serial_numbers t1 
+  LEFT JOIN book_copies t2 ON t1.serial_number = t2.serial_number
+)
+SELECT t1.ISBN, t2.author_1, t2.author_2, t2.author_3, t2.publisher_name, t2.book_category
+FROM ISBNs t1
+  LEFT JOIN book_titles t2 ON t1.ISBN = t2.ISBN;
